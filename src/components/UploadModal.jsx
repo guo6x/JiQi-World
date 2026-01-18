@@ -85,7 +85,7 @@ export default function UploadModal({ onClose, onUploadSuccess, memories }) {
       <motion.div 
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-zinc-900 border border-zinc-700 p-8 rounded-2xl w-full max-w-md shadow-2xl max-h-[85vh] overflow-hidden flex flex-col"
+        className="bg-zinc-900 border border-zinc-700 p-4 md:p-8 rounded-2xl w-full max-w-md shadow-2xl max-h-[85vh] overflow-hidden flex flex-col"
       >
         <div className="flex justify-between items-center mb-6 shrink-0">
             <h2 className="text-2xl text-white font-light">

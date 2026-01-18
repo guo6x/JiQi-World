@@ -101,7 +101,7 @@ export default function App() {
 
   if (isMobile) {
     return (
-        <>
+        <div className="bg-black min-h-screen">
             <MobileView 
                 memories={memories} 
                 onOpenUpload={() => setShowUpload(true)}
@@ -115,7 +115,7 @@ export default function App() {
                     }}
                 />
             )}
-        </>
+        </div>
     );
   }
 
@@ -148,7 +148,7 @@ export default function App() {
       {/* Virtual Cursor */}
       <div 
         ref={cursorRef}
-        className="fixed top-0 left-0 w-8 h-8 pointer-events-none z-50 -ml-4 -mt-4 opacity-0 transition-opacity duration-300"
+        className="fixed top-0 left-0 w-8 h-8 pointer-events-none z-[60] -ml-4 -mt-4 opacity-0 transition-opacity duration-300"
       >
         <div className="w-full h-full border-2 border-cyan-400 rounded-full shadow-[0_0_15px_rgba(34,211,238,0.8)] flex items-center justify-center">
             <div className="w-1 h-1 bg-white rounded-full"></div>
@@ -181,7 +181,7 @@ export default function App() {
       })()}
 
       {error && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-red-500/80 text-white px-6 py-2 rounded-full backdrop-blur-md shadow-lg flex items-center gap-2">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[70] bg-red-500/80 text-white px-6 py-2 rounded-full backdrop-blur-md shadow-lg flex items-center gap-2">
             <span className="text-xl">⚠️</span>
             <span>{error}</span>
         </div>
