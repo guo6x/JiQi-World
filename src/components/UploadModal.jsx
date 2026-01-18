@@ -36,7 +36,7 @@ export default function UploadModal({ onClose, onUploadSuccess, memories }) {
       const { error: dbError } = await supabase
         .from('memories')
         .insert([{
-            url: publicUrl,
+            image_url: publicUrl, // Fixed: match DB column name
             description: desc,
             memory_date: date,
             type: 'image'
@@ -151,7 +151,7 @@ export default function UploadModal({ onClose, onUploadSuccess, memories }) {
                     {memories && memories.map(mem => (
                         <div key={mem.id} className="flex items-center gap-3 bg-zinc-800/50 p-2 rounded-lg border border-zinc-700/50 hover:border-zinc-600 transition-colors">
                             <img 
-                                src={mem.url} 
+                                src={mem.url || mem.image_url} 
                                 alt="thumbnail" 
                                 className="w-12 h-12 object-cover rounded bg-zinc-900" 
                             />
@@ -160,7 +160,7 @@ export default function UploadModal({ onClose, onUploadSuccess, memories }) {
                                 <p className="text-zinc-400 text-xs truncate">{mem.description || '无描述'}</p>
                             </div>
                             <button 
-                                onClick={() => handleDelete(mem.id, mem.url)}
+                                onClick={() => handleDelete(mem.id, mem.url || mem.image_url)}
                                 className="text-zinc-500 hover:text-red-400 p-2 transition-colors"
                                 title="删除"
                             >

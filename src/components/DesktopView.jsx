@@ -192,7 +192,7 @@ function SceneContent({ memories, layoutMode, selectedId, hoveredId, onHover, cu
                 <Photo 
                     key={mem.id}
                     index={i}
-                    url={mem.url}
+                    url={mem.url || mem.image_url}
                     date={mem.memory_date}
                     position={currentPositions[i] || new THREE.Vector3(0,0,0)}
                     isSelected={selectedId === mem.id}

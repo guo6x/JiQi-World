@@ -8,7 +8,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 const MOCK_DATA = Array.from({ length: 40 }).map((_, i) => ({
   id: `mock-${i}`,
   // Using loremflickr for better reliability and thematic images
-  url: `https://loremflickr.com/800/600/space,galaxy?lock=${i}`, 
+  image_url: `https://loremflickr.com/800/600/space,galaxy?lock=${i}`, 
+  url: `https://loremflickr.com/800/600/space,galaxy?lock=${i}`, // Backward compat
   description: `美好回忆 #${i + 1} - 我们的点点滴滴`,
   memory_date: new Date(Date.now() - i * 86400000 * 5).toISOString().split('T')[0],
   created_at: new Date().toISOString()
