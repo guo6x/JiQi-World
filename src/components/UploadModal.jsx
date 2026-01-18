@@ -5,55 +5,67 @@ import { v4 as uuidv4 } from 'uuid';
 
 export default function UploadModal({ onClose, onUploadSuccess, memories }) {
   const [activeTab, setActiveTab] = useState('upload'); // 'upload' | 'manage'
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]); // Changed from single file to array
   const [desc, setDesc] = useState('');
   const [date, setDate] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState({ current: 0, total: 0 }); // Progress state
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!file || !date) return;
+    if (files.length === 0 || !date) return;
 
     setUploading(true);
+    setProgress({ current: 0, total: files.length });
+
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${uuidv4()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      // Process uploads in parallel (limit concurrency if needed, but browsers handle small batches fine)
+      const uploadPromises = Array.from(files).map(async (file, index) => {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${uuidv4()}.${fileExt}`;
+          const filePath = `${fileName}`;
 
-      // Upload to Storage
-      const { error: uploadError } = await supabase.storage
-        .from('photos')
-        .upload(filePath, file);
+          // 1. Upload to Storage
+          const { error: uploadError } = await supabase.storage
+            .from('photos')
+            .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+          if (uploadError) throw uploadError;
 
-      // Get Public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('photos')
-        .getPublicUrl(filePath);
+          // 2. Get Public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('photos')
+            .getPublicUrl(filePath);
 
-      // Insert into Database
-      const { error: dbError } = await supabase
-        .from('memories')
-        .insert([{
-            image_url: publicUrl, // Fixed: match DB column name
-            description: desc,
-            memory_date: date,
-            type: 'image'
-        }]);
+          // 3. Insert into Database
+          const { error: dbError } = await supabase
+            .from('memories')
+            .insert([{
+                image_url: publicUrl,
+                description: desc, // Apply same description to all
+                memory_date: date, // Apply same date to all
+                type: 'image'
+            }]);
 
-      if (dbError) throw dbError;
+          if (dbError) throw dbError;
+          
+          // Update progress
+          setProgress(prev => ({ ...prev, current: prev.current + 1 }));
+      });
+
+      await Promise.all(uploadPromises);
 
       onUploadSuccess();
       // Reset form
-      setFile(null);
+      setFiles([]);
       setDesc('');
       setDate('');
-      alert('上传成功！');
+      alert(`成功上传 ${files.length} 张照片！`);
     } catch (error) {
-      alert('Upload failed: ' + error.message);
+      alert('部分或全部上传失败: ' + error.message);
     } finally {
       setUploading(false);
+      setProgress({ current: 0, total: 0 });
     }
   };
 
@@ -99,13 +111,17 @@ export default function UploadModal({ onClose, onUploadSuccess, memories }) {
             {activeTab === 'upload' ? (
                 <form onSubmit={handleUpload} className="space-y-4 pb-2">
                   <div>
-                    <label className="block text-zinc-400 text-sm mb-2">照片文件</label>
+                    <label className="block text-zinc-400 text-sm mb-2">照片文件 (可多选)</label>
                     <input 
                         type="file" 
                         accept="image/*"
-                        onChange={e => setFile(e.target.files[0])}
+                        multiple // Allow multiple selection
+                        onChange={e => setFiles(e.target.files)}
                         className="w-full text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-cyan-400 hover:file:bg-zinc-700"
                     />
+                    {files.length > 0 && (
+                        <p className="text-cyan-400 text-xs mt-2">已选择 {files.length} 张照片</p>
+                    )}
                   </div>
                   
                   <div>
@@ -140,9 +156,9 @@ export default function UploadModal({ onClose, onUploadSuccess, memories }) {
                     <button 
                         type="submit" 
                         disabled={uploading}
-                        className="px-6 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-full font-medium transition-colors disabled:opacity-50"
+                        className="px-6 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-full font-medium transition-colors disabled:opacity-50 min-w-[120px]"
                     >
-                        {uploading ? '上传中...' : '确认上传'}
+                        {uploading ? `上传中 ${progress.current}/${progress.total}` : '确认上传'}
                     </button>
                   </div>
                 </form>

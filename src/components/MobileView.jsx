@@ -1,10 +1,32 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 
-export default function MobileView({ memories }) {
+export default function MobileView({ memories, onOpenUpload }) {
+  const timerRef = useRef(null);
+
+  const handleTouchStart = () => {
+    timerRef.current = setTimeout(() => {
+        if (onOpenUpload) onOpenUpload();
+    }, 1500); // 1.5s long press
+  };
+
+  const handleTouchEnd = () => {
+    if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white p-4 overflow-y-auto">
-      <h1 className="text-3xl font-bold text-center mb-10 mt-6 tracking-[0.2em] border-b border-white/10 pb-6 bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+      <h1 
+        className="text-3xl font-bold text-center mb-10 mt-6 tracking-[0.2em] border-b border-white/10 pb-6 bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent select-none active:scale-95 transition-transform"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleTouchStart} // For testing on desktop
+        onMouseUp={handleTouchEnd}
+        onMouseLeave={handleTouchEnd}
+      >
         吉琪的世界
       </h1>
       <div className="flex flex-col gap-12 pb-16">

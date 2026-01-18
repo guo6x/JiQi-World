@@ -100,7 +100,23 @@ export default function App() {
   }
 
   if (isMobile) {
-    return <MobileView memories={memories} />;
+    return (
+        <>
+            <MobileView 
+                memories={memories} 
+                onOpenUpload={() => setShowUpload(true)}
+            />
+            {showUpload && (
+                <UploadModal 
+                    memories={memories}
+                    onClose={() => setShowUpload(false)} 
+                    onUploadSuccess={() => {
+                        getMemories().then(setMemories);
+                    }}
+                />
+            )}
+        </>
+    );
   }
 
   return (
