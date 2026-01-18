@@ -4,30 +4,31 @@ import { motion } from 'framer-motion';
 export default function MobileView({ memories }) {
   return (
     <div className="min-h-screen bg-black text-white p-4 overflow-y-auto">
-      <h1 className="text-2xl font-light text-center mb-8 mt-4 tracking-widest border-b border-white/20 pb-4">
+      <h1 className="text-3xl font-bold text-center mb-10 mt-6 tracking-[0.2em] border-b border-white/10 pb-6 bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
         吉琪的世界
       </h1>
-      <div className="flex flex-col gap-8 pb-12">
+      <div className="flex flex-col gap-12 pb-16">
         {memories.map((mem) => (
           <motion.div
             key={mem.id}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="flex flex-col gap-3"
+            initial={{ opacity: 0, y: 50, scale: 0.95 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="flex flex-col gap-4"
           >
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border border-white/10 shadow-lg shadow-cyan-900/10">
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-white/20 shadow-[0_0_30px_rgba(6,182,212,0.15)] group">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
               <img 
                 src={mem.url} 
                 alt={mem.description} 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
                 loading="lazy"
               />
             </div>
-            <div className="flex justify-between items-baseline px-1">
-              <p className="text-sm text-gray-400 font-mono">{mem.memory_date}</p>
-              <p className="text-base font-light text-gray-200">{mem.description}</p>
+            <div className="flex flex-col gap-1 px-2">
+              <p className="text-xs text-cyan-400 font-mono tracking-widest uppercase opacity-80">{mem.memory_date}</p>
+              <p className="text-lg font-light text-gray-100 leading-relaxed tracking-wide drop-shadow-lg">{mem.description}</p>
             </div>
           </motion.div>
         ))}

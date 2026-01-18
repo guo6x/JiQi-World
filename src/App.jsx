@@ -173,6 +173,7 @@ export default function App() {
 
       {showUpload && (
         <UploadModal 
+            memories={memories}
             onClose={() => setShowUpload(false)} 
             onUploadSuccess={() => {
                 getMemories().then(setMemories);

@@ -36,3 +36,35 @@ export const getMemories = async () => {
     return MOCK_DATA;
   }
 };
+
+export const deleteMemory = async (id, url) => {
+  try {
+    // 1. Delete from database
+    const { error: dbError } = await supabase
+      .from('memories')
+      .delete()
+      .eq('id', id);
+
+    if (dbError) throw dbError;
+
+    // 2. Delete from storage (if it's not a mock url)
+    if (url && !url.includes('loremflickr.com')) {
+       const urlObj = new URL(url);
+       const pathParts = urlObj.pathname.split('/');
+       // Assuming structure: /storage/v1/object/public/photos/filename
+       const fileName = pathParts[pathParts.length - 1];
+       
+       if (fileName) {
+           const { error: storageError } = await supabase.storage
+            .from('photos')
+            .remove([fileName]);
+           
+           if (storageError) console.warn('Storage delete error:', storageError);
+       }
+    }
+    return true;
+  } catch (err) {
+    console.error('Delete failed:', err);
+    throw err;
+  }
+};
