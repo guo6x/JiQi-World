@@ -35,7 +35,7 @@ export default function App() {
         setError(null);
       })
       .catch(err => {
-        console.error("Failed to load memories:", err);
+        // console.error("Failed to load memories:", err); // Suppress log in production
         setError("无法连接到记忆库，请检查网络连接");
       });
   }, []);

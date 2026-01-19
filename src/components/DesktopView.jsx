@@ -1,10 +1,9 @@
-import React, { useRef, useMemo, useEffect, useState } from 'react';
+import React, { useRef, useMemo, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Image, Stars, OrbitControls, Text, QuadraticBezierLine } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { getSphereLayout, getHelixLayout, getHelixLines } from '../utils/layouts';
-import { soundManager } from '../utils/SoundManager';
 
 // Constants
 const SELECTED_SCALE = new THREE.Vector3(5, 5, 5); 
@@ -52,9 +51,6 @@ function Photo({ url, date, position, isSelected, isHovered, onClick }) {
         ref.current.quaternion.slerp(_dummyObj.quaternion, delta * LERP_SPEED_NORMAL);
 
         const targetScale = isHovered ? new THREE.Vector3(2.5, 2.5, 2.5) : NORMAL_SCALE;
-        // targetScale is new Vector3(2.5...) - minor, can be optimized but okay for now as it's small.
-        // Better:
-        // ref.current.scale.lerp(isHovered ? HOVER_SCALE : NORMAL_SCALE, ...)
         ref.current.scale.lerp(targetScale, delta * LERP_SPEED_NORMAL);
     }
   });

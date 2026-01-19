@@ -18,7 +18,7 @@ export const initializeGestureRecognizer = async () => {
         numHands: 2
     });
   } catch (error) {
-      console.error("Failed to initialize gesture recognizer:", error);
+      // console.error("Failed to initialize gesture recognizer:", error); // Suppress log
   }
 };
 

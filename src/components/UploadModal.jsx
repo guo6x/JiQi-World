@@ -1,7 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase, deleteMemory } from '../supabaseClient';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { v4 as uuidv4 } from 'uuid';
+
+// Simple Toast Component
+const Toast = ({ message, type, onClose }) => {
+    useEffect(() => {
+        const timer = setTimeout(onClose, 3000);
+        return () => clearTimeout(timer);
+    }, [onClose]);
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className={`fixed top-4 right-4 z-[100] px-6 py-3 rounded-lg shadow-xl text-white text-sm font-medium ${
+                type === 'error' ? 'bg-red-500/90' : 'bg-green-500/90'
+            } backdrop-blur-md`}
+        >
+            {message}
+        </motion.div>
+    );
+};
 
 export default function UploadModal({ onClose, onUploadSuccess, memories }) {
   const [activeTab, setActiveTab] = useState('upload'); // 'upload' | 'manage'
@@ -10,6 +31,11 @@ export default function UploadModal({ onClose, onUploadSuccess, memories }) {
   const [date, setDate] = useState('');
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 }); // Progress state
+  const [toast, setToast] = useState(null); // { message, type }
+
+  const showToast = (message, type = 'success') => {
+      setToast({ message, type });
+  };
 
   const handleUpload = async (e) => {
     e.preventDefault();
@@ -60,9 +86,9 @@ export default function UploadModal({ onClose, onUploadSuccess, memories }) {
       setFiles([]);
       setDesc('');
       setDate('');
-      alert(`成功上传 ${files.length} 张照片！`);
+      showToast(`成功上传 ${files.length} 张照片！`);
     } catch (error) {
-      alert('部分或全部上传失败: ' + error.message);
+      showToast('部分或全部上传失败: ' + error.message, 'error');
     } finally {
       setUploading(false);
       setProgress({ current: 0, total: 0 });
@@ -70,18 +96,25 @@ export default function UploadModal({ onClose, onUploadSuccess, memories }) {
   };
 
   const handleDelete = async (id, url) => {
-      if (!confirm('确定要删除这张照片吗？此操作无法撤销。')) return;
+      if (!confirm('确定要删除这张照片吗？此操作无法撤销。')) return; // Keep confirm for critical delete action or replace with custom modal later
       
       try {
           await deleteMemory(id, url);
           onUploadSuccess(); // Refresh list
+          showToast('删除成功');
       } catch (err) {
-          alert('删除失败: ' + err.message);
+          showToast('删除失败: ' + err.message, 'error');
       }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+    <>
+        <AnimatePresence>
+            {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+        </AnimatePresence>
+        
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+
       <motion.div 
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -114,8 +147,9 @@ export default function UploadModal({ onClose, onUploadSuccess, memories }) {
                     <label className="block text-zinc-400 text-sm mb-2">照片文件 (可多选)</label>
                     <input 
                         type="file" 
+                        name="files[]"
                         accept="image/*"
-                        multiple // Allow multiple selection
+                        multiple
                         onChange={e => setFiles(e.target.files)}
                         className="w-full text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-cyan-400 hover:file:bg-zinc-700"
                     />
@@ -205,5 +239,6 @@ export default function UploadModal({ onClose, onUploadSuccess, memories }) {
         </div>
       </motion.div>
     </div>
+    </>
   );
 }
