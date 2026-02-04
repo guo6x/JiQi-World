@@ -1,8 +1,10 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import Mobile3DScene from './Mobile3DScene';
 
 export default function MobileView({ memories, onOpenUpload }) {
   const timerRef = useRef(null);
+  const [show3D, setShow3D] = useState(false);
 
   const handleTouchStart = () => {
     timerRef.current = setTimeout(() => {
@@ -27,7 +29,7 @@ export default function MobileView({ memories, onOpenUpload }) {
         onMouseUp={handleTouchEnd}
         onMouseLeave={handleTouchEnd}
       >
-        吉琪的世界
+        {config.title}
       </h1>
       <div className="flex flex-col gap-12 pb-16">
         {memories.map((mem) => (
@@ -58,6 +60,22 @@ export default function MobileView({ memories, onOpenUpload }) {
       <div className="text-center text-xs text-gray-600 pb-8">
           Designed for Desktop Experience
       </div>
+
+      {/* 3D Mode Trigger */}
+      <button 
+        onClick={() => setShow3D(true)}
+        className="fixed bottom-8 right-8 z-40 w-14 h-14 bg-black/60 border border-cyan-400/50 rounded-full flex items-center justify-center backdrop-blur-md shadow-[0_0_20px_rgba(34,211,238,0.3)] active:scale-90 transition-transform"
+      >
+        <div className="text-2xl animate-pulse">🪐</div>
+      </button>
+
+      {/* 3D Scene Overlay */}
+      {show3D && (
+        <Mobile3DScene 
+            memories={memories} 
+            onClose={() => setShow3D(false)} 
+        />
+      )}
     </div>
   );
 }

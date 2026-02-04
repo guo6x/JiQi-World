@@ -69,12 +69,12 @@ export default function GestureHandler({ onGesture, onCursorMove, onRotate, onZo
           
           // A. POINT -> Rotate (Look Around) + Cursor Move (Visual)
           if (rawGesture === 'POINT') {
-              // Smooth Rotate Coords
+              // Smooth Rotate Coords - INCREASED SENSITIVITY (0.1 -> 0.2)
               const targetX = 1 - indexTip.x;
               const targetY = indexTip.y;
               
-              lastRotateRef.current.x = lerp(lastRotateRef.current.x, targetX, 0.1); 
-              lastRotateRef.current.y = lerp(lastRotateRef.current.y, targetY, 0.1);
+              lastRotateRef.current.x = lerp(lastRotateRef.current.x, targetX, 0.2); 
+              lastRotateRef.current.y = lerp(lastRotateRef.current.y, targetY, 0.2);
               
               onRotate(lastRotateRef.current);
               
@@ -82,27 +82,16 @@ export default function GestureHandler({ onGesture, onCursorMove, onRotate, onZo
               onCursorMove(lastRotateRef.current);
           } else {
               onRotate(null); // Stop rotating if not pointing
-              if (rawGesture !== 'VICTORY') {
-                 // Keep cursor visible for click? No, click is victory.
-                 // Maybe just hide cursor if not pointing?
+              
+              // B. PINCH -> LOCK CURSOR (Don't update position)
+              if (rawGesture === 'PINCH') {
+                   // DO NOTHING to lastRotateRef/lastCursorRef
+                   // This effectively "locks" the cursor where it was last frame
+                   // No onCursorMove call means visual cursor stays put
+              } else {
+                  // For other gestures (like NONE), we might want to hide cursor?
+                  // App.jsx handles hiding if gesture is NONE.
               }
-          }
-          
-          // B. VICTORY -> Just Cursor (Static) or Click
-          if (rawGesture === 'VICTORY') {
-               // Update cursor but don't rotate? 
-               // Or let it stay where it was?
-               // Let's allow Victory to move cursor too so you can aim fine?
-               // But usually you Point -> Aim -> Victory.
-               // If you switch to Victory, index tip might move.
-               // Let's update cursor with Victory too.
-               const targetX = 1 - indexTip.x;
-               const targetY = indexTip.y;
-               
-               lastCursorRef.current.x = lerp(lastCursorRef.current.x, targetX, 0.3);
-               lastCursorRef.current.y = lerp(lastCursorRef.current.y, targetY, 0.3);
-               
-               onCursorMove(lastCursorRef.current);
           }
           
           // Reset Rotation if not POINT
@@ -145,9 +134,9 @@ export default function GestureHandler({ onGesture, onCursorMove, onRotate, onZo
 
               // --- One-Shot Triggers ---
               
-              // VICTORY (Click)
-              if (stableGesture === 'VICTORY' && !hasTriggeredRef.current) {
-                  onGesture('VICTORY_TRIGGER');
+              // PINCH (Click)
+              if (stableGesture === 'PINCH' && !hasTriggeredRef.current) {
+                  onGesture('VICTORY_TRIGGER'); // Keep legacy event name or rename? Keeping for now.
                   hasTriggeredRef.current = true;
               }
 
@@ -163,10 +152,10 @@ export default function GestureHandler({ onGesture, onCursorMove, onRotate, onZo
                   hasTriggeredRef.current = true;
               }
 
-              // OK (Admin) - Hold for 2 seconds
+              // OK (Admin) - Hold for 3 seconds (Increased from 2s)
               if (stableGesture === 'OK') {
                   okHoldTimeRef.current += 50; // Add 50ms
-                  if (okHoldTimeRef.current > 2000 && !hasTriggeredRef.current) {
+                  if (okHoldTimeRef.current > 3000 && !hasTriggeredRef.current) {
                       onAdminTrigger();
                       hasTriggeredRef.current = true;
                   }

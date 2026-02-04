@@ -7,6 +7,7 @@ import DesktopView from './components/DesktopView';
 import MobileView from './components/MobileView';
 import GestureHandler from './components/GestureHandler';
 import UploadModal from './components/UploadModal';
+import { config } from './config';
 
 export default function App() {
   const { width } = useWindowSize();
@@ -156,13 +157,13 @@ export default function App() {
       </div>
 
       <div className="absolute top-8 left-8 text-white pointer-events-none z-10">
-        <h1 className="text-3xl font-light tracking-widest">吉琪的世界</h1>
+        <h1 className="text-3xl font-light tracking-widest">{config.title}</h1>
         <p className="text-xs text-gray-400 mt-2 tracking-wider">
             MODE: {layoutMode} | {selectedId ? 'DETAIL' : 'WORLD'}
         </p>
         <div className="mt-4 text-[10px] text-gray-600 space-y-1">
             <p>👆 食指: 指向旋转</p>
-            <p>✌️ 剪刀手: 点击确认</p>
+            <p>🤏 捏合: 点击确认</p>
             <p>👎 拇指向下: 退出</p>
             <p>🖐 张开手掌: 前后缩放</p>
             <p>🤘 摇滚手势: 切换布局</p>
@@ -173,9 +174,12 @@ export default function App() {
           const mem = memories.find(m => m.id === selectedId);
           if (!mem) return null;
           return (
-              <div className="absolute bottom-20 left-1/2 -translate-x-1/2 text-center z-20 pointer-events-none max-w-lg w-full px-4">
-                  <h2 className="text-2xl font-light text-white mb-2 tracking-widest">{mem.memory_date}</h2>
-                  <p className="text-lg text-cyan-200 font-light leading-relaxed drop-shadow-lg">{mem.description}</p>
+              <div className="absolute top-0 right-0 w-1/3 h-full bg-black/40 backdrop-blur-md border-l border-white/10 p-12 flex flex-col justify-center z-20 pointer-events-auto overflow-y-auto">
+                  <h2 className="text-4xl font-thin text-white mb-8 tracking-widest">{mem.memory_date}</h2>
+                  <div className="w-12 h-1 bg-cyan-500 mb-8"></div>
+                  <p className="text-lg text-gray-200 font-light leading-relaxed whitespace-pre-line">
+                    {mem.description}
+                  </p>
               </div>
           );
       })()}

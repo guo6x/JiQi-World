@@ -78,17 +78,19 @@ function Photo({ url, date, position, isSelected, isHovered, onClick }) {
             />
         </mesh>
         
-        <Text
-            position={[0, -0.7, 0]}
-            fontSize={0.2}
-            color="white"
-            anchorX="center"
-            anchorY="middle"
-            outlineWidth={0.02}
-            outlineColor="#000000"
-        >
-            {date}
-        </Text>
+        {!isSelected && (
+            <Text
+                position={[0, -0.7, 0]}
+                fontSize={0.2}
+                color="white"
+                anchorX="center"
+                anchorY="middle"
+                outlineWidth={0.02}
+                outlineColor="#000000"
+            >
+                {date}
+            </Text>
+        )}
     </group>
   );
 }

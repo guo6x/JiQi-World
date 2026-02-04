@@ -85,13 +85,15 @@ export const interpretGesture = (results) => {
 
   let gesture = 'NONE';
 
-  // 1. VICTORY (Click)
-  // Index & Middle Extended, Ring & Pinky Curled
-  if (indexExt && middleExt && !ringExt && !pinkyExt) {
-      gesture = 'VICTORY';
+  // 1. PINCH (Click) - REPLACES VICTORY
+  // Thumb & Index Tips Close (Pinch), others Curled (Crab Pincer style)
+  // This distinguishes it from OK (which has others Extended)
+  const pinchDist = getDistance(landmarks[4], landmarks[8]);
+  if (pinchDist < 0.05 && !middleExt && !ringExt && !pinkyExt) {
+      gesture = 'PINCH';
   }
 
-  // 2. ROCK (Switch Layout) - REPLACES THUMB_UP
+  // 2. ROCK (Switch Layout)
   // Index & Pinky Extended, Middle & Ring Curled (🤘)
   else if (indexExt && !middleExt && !ringExt && pinkyExt) {
       gesture = 'ROCK';
@@ -106,15 +108,13 @@ export const interpretGesture = (results) => {
   // 4. OK (Admin)
   // Thumb & Index Tips Close, Middle/Ring/Pinky Extended
   else if (middleExt && ringExt && pinkyExt) {
-      const dist = getDistance(landmarks[4], landmarks[8]); // Thumb Tip to Index Tip
-      // Index should NOT be fully extended (it's curved), but mostly we care about the pinch
+      const dist = getDistance(landmarks[4], landmarks[8]); 
       if (dist < 0.05) {
           gesture = 'OK';
       }
   }
 
   // 5. POINT (Rotate) - Index Extended, others Curled
-  // REPLACES FIST
   else if (indexExt && !middleExt && !ringExt && !pinkyExt) {
       gesture = 'POINT';
   }
@@ -127,11 +127,10 @@ export const interpretGesture = (results) => {
   
   // Fallback to MediaPipe category if geometry is ambiguous but category is strong
   if (gesture === 'NONE' && score > 0.6) {
-      // if (category === 'Closed_Fist') gesture = 'FIST'; // Disable Fist
       if (category === 'Open_Palm') gesture = 'OPEN_PALM';
       if (category === 'Pointing_Up') gesture = 'POINT';
       if (category === 'Thumb_Down') gesture = 'THUMB_DOWN';
-      if (category === 'Victory') gesture = 'VICTORY';
+      // Victory removed fallback
   }
 
   // --- Coordinate Extraction ---
