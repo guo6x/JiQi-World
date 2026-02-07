@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Image, Stars, DeviceOrientationControls, Text, Html, useProgress } from '@react-three/drei';
 import * as THREE from 'three';
 import { getSphereLayout } from '../utils/layouts';
+import { config } from '../config';
 
 // Constants
 const NORMAL_SCALE = new THREE.Vector3(1.2, 1.2, 1.2);
@@ -117,10 +118,10 @@ export default function Mobile3DScene({ memories, onClose }) {
     if (!permissionGranted) {
         return (
             <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center p-8 text-center space-y-8">
-                 <h2 className="text-3xl font-light text-cyan-400 tracking-widest animate-pulse">POCKET UNIVERSE</h2>
+                 <h2 className="text-3xl font-light text-cyan-400 tracking-widest animate-pulse">{config.mobile3DTitle}</h2>
                  <p className="text-gray-400 text-sm leading-relaxed">
-                     准备好进入全息宇宙了吗？<br/>
-                     请授予陀螺仪权限，转动手机探索回忆。
+                     {config.mobile3DSubtitle}<br/>
+                     {config.mobile3DInstruction}
                  </p>
                  <div className="flex gap-4">
                      <button 
@@ -133,7 +134,7 @@ export default function Mobile3DScene({ memories, onClose }) {
                         onClick={requestAccess}
                         className="px-8 py-2 bg-cyan-500/20 border border-cyan-400/50 rounded-full text-cyan-300 font-bold shadow-[0_0_20px_rgba(34,211,238,0.3)]"
                      >
-                         启动引擎
+                         {config.mobile3DButton}
                      </button>
                  </div>
             </div>

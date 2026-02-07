@@ -13,4 +13,10 @@ export const config = {
   
   // 浏览器标签页标题 (HTML title)
   documentTitle: "JiQi-World | 3D Memories",
+
+  // 移动端 3D 模式配置
+  mobile3DTitle: "POCKET UNIVERSE",
+  mobile3DSubtitle: "准备好进入全息宇宙了吗？",
+  mobile3DInstruction: "请授予陀螺仪权限，转动手机探索回忆。",
+  mobile3DButton: "启动引擎",
 };

@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import Mobile3DScene from './Mobile3DScene';
+import { config } from '../config';
 
 export default function MobileView({ memories, onOpenUpload }) {
   const timerRef = useRef(null);
