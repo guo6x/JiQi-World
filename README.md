@@ -89,7 +89,7 @@ npm run dev
 
 ## 📜 License
 
-MIT License © 2024 [Your Name]
+MIT License © 2026[guojiaji]
 
 ---
 
