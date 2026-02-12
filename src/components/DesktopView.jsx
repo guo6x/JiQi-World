@@ -201,29 +201,46 @@ function SceneContent({ memories, layoutMode, selectedId, hoveredId, onHover, cu
     );
 }
 
-function CameraController({ rotateCoords, controlsRef }) {
+function CameraController({ rotateCoords, zoomY, controlsRef }) {
     useFrame(() => {
-        if (rotateCoords && controlsRef.current) {
-            // Joystick Logic
-            // Center (0.5, 0.5) -> Speed 0
-            // Right Edge (1.0) -> Speed +X
-            // Left Edge (0.0) -> Speed -X
-            
-            const speedX = (rotateCoords.x - 0.5) * 0.05; // Sensitivity
-            const speedY = (rotateCoords.y - 0.5) * 0.05;
+        if (controlsRef.current) {
+            // --- Rotation Logic ---
+            if (rotateCoords) {
+                // Joystick Logic
+                const speedX = (rotateCoords.x - 0.5) * 0.1; // Sensitivity
+                const speedY = (rotateCoords.y - 0.5) * 0.1;
 
-            // Deadzone (small center area where it doesn't move)
-            if (Math.abs(speedX) > 0.002) {
-                const currentAzimuth = controlsRef.current.getAzimuthalAngle();
-                // To rotate RIGHT (look right), we need to decrease Azimuth?
-                // OrbitControls: Left-click drag left -> rotates camera right around target.
-                // Let's test direction: -speedX usually feels natural (drag to spin).
-                controlsRef.current.setAzimuthalAngle(currentAzimuth - speedX * 2);
+                if (Math.abs(speedX) > 0.002) {
+                    const currentAzimuth = controlsRef.current.getAzimuthalAngle();
+                    controlsRef.current.setAzimuthalAngle(currentAzimuth - speedX * 2);
+                }
+
+                if (Math.abs(speedY) > 0.002) {
+                    const currentPolar = controlsRef.current.getPolarAngle();
+                    controlsRef.current.setPolarAngle(currentPolar - speedY * 2);
+                }
             }
 
-            if (Math.abs(speedY) > 0.002) {
-                const currentPolar = controlsRef.current.getPolarAngle();
-                controlsRef.current.setPolarAngle(currentPolar - speedY * 2);
+            // --- Zoom Logic (Per Frame for Smoothness) ---
+            if (zoomY !== null) {
+                // zoomY is "zoomScale" (Hand Scale: 0.05 Far -> 0.25 Close)
+                const clampedScale = THREE.MathUtils.clamp(zoomY, 0.05, 0.25);
+                
+                // Map Hand Scale to Distance: 
+                // Big Hand (0.25) -> Close (5)
+                // Small Hand (0.05) -> Far (50)
+                const targetDist = THREE.MathUtils.mapLinear(clampedScale, 0.05, 0.25, 50, 5);
+                
+                // Lerp current distance
+                const currentPos = controlsRef.current.object.position;
+                const currentDist = currentPos.length();
+                
+                // Lerp factor 0.1 for smooth catch-up
+                const newDist = THREE.MathUtils.lerp(currentDist, targetDist, 0.1);
+                
+                // Apply new distance while preserving direction
+                const dir = currentPos.clone().normalize();
+                controlsRef.current.object.position.copy(dir.multiplyScalar(newDist));
             }
             
             controlsRef.current.update();
@@ -235,31 +252,7 @@ function CameraController({ rotateCoords, controlsRef }) {
 export default function DesktopView({ memories, layoutMode, selectedId, hoveredId, onHover, rotationSpeed, zoomY, cursorPos, rotateCoords }) {
     const controlsRef = useRef();
 
-    // Handle Zoom (Open Palm Scale) - Keep as useEffect for now or move to Frame?
-    // Zoom is absolute mapping based on hand scale, so useEffect is fine.
-    useEffect(() => {
-        if (zoomY !== null && controlsRef.current) {
-            // ... (keep existing zoom logic)
-            // zoomY is actually "zoomScale" now (Hand Scale)
-            // Scale ~0.05 (Far hand) -> Distance 50
-            // Scale ~0.25 (Close hand) -> Distance 5
-            
-            // Clamp scale input to avoid extreme jumps
-            const clampedScale = THREE.MathUtils.clamp(zoomY, 0.05, 0.25);
-            
-            const targetDist = THREE.MathUtils.mapLinear(clampedScale, 0.05, 0.25, 50, 5);
-            
-            // Lerp current distance
-            const currentPos = controlsRef.current.object.position;
-            const currentDist = currentPos.length();
-            
-            const newDist = THREE.MathUtils.lerp(currentDist, targetDist, 0.1);
-            
-            const dir = currentPos.clone().normalize();
-            controlsRef.current.object.position.copy(dir.multiplyScalar(newDist));
-            controlsRef.current.update();
-        }
-    }, [zoomY]);
+    // Removed useEffect for Zoom - Moved to CameraController useFrame
 
     return (
         <div className="w-full h-full bg-black">
@@ -282,7 +275,7 @@ export default function DesktopView({ memories, layoutMode, selectedId, hoveredI
                     rotateCoords={rotateCoords}
                 />
 
-                <CameraController rotateCoords={rotateCoords} controlsRef={controlsRef} />
+                <CameraController rotateCoords={rotateCoords} zoomY={zoomY} controlsRef={controlsRef} />
 
                 <EffectComposer>
                     <Bloom 
@@ -299,7 +292,7 @@ export default function DesktopView({ memories, layoutMode, selectedId, hoveredI
                     // Disable mouse if using hand rotation to avoid conflict
                     enabled={!rotateCoords}
                     autoRotate={!selectedId && !rotateCoords} 
-                    autoRotateSpeed={rotationSpeed * 10} 
+                    autoRotateSpeed={rotationSpeed * 4} 
                     enableDamping
                     enableZoom={true}
                     enablePan={false}

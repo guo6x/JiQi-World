@@ -130,29 +130,31 @@ export default function App() {
         hoveredId={hoveredId}
         onHover={setHoveredId}
         rotationSpeed={rotationSpeed}
-        cursorPos={cursorPos}
+        cursorPos={{ x: 0.5, y: 0.5 }} // Always raycast from center (Crosshair selection)
         rotateCoords={rotateCoords}
         zoomY={zoomY}
       />
       
       <GestureHandler 
         onGesture={handleGesture} 
-        onCursorMove={handleCursorMove}
         onRotate={handleRotate}
         onZoom={handleZoom}
+        onWave={() => {
+            if (selectedId) {
+                soundManager.playExit();
+                setSelectedId(null);
+            }
+        }}
         onAdminTrigger={() => {
             soundManager.playSuccess();
             setShowUpload(true);
         }}
       />
       
-      {/* Virtual Cursor */}
-      <div 
-        ref={cursorRef}
-        className="fixed top-0 left-0 w-8 h-8 pointer-events-none z-[60] -ml-4 -mt-4 opacity-0 transition-opacity duration-300"
-      >
-        <div className="w-full h-full border-2 border-cyan-400 rounded-full shadow-[0_0_15px_rgba(34,211,238,0.8)] flex items-center justify-center">
-            <div className="w-1 h-1 bg-white rounded-full"></div>
+      {/* Center Crosshair (Reticle) */}
+      <div className="fixed top-1/2 left-1/2 w-12 h-12 -ml-6 -mt-6 pointer-events-none z-[60] opacity-30">
+        <div className="w-full h-full border border-white/30 rounded-full flex items-center justify-center">
+            <div className="w-1 h-1 bg-cyan-400 rounded-full"></div>
         </div>
       </div>
 
@@ -161,12 +163,11 @@ export default function App() {
         <p className="text-xs text-gray-400 mt-2 tracking-wider">
             MODE: {layoutMode} | {selectedId ? 'DETAIL' : 'WORLD'}
         </p>
-        <div className="mt-4 text-[10px] text-gray-600 space-y-1">
-            <p>👆 食指: 指向旋转</p>
-            <p>🤏 捏合: 点击确认</p>
-            <p>👎 拇指向下: 退出</p>
-            <p>🖐 张开手掌: 前后缩放</p>
-            <p>🤘 摇滚手势: 切换布局</p>
+        <div className="mt-4 text-[10px] text-gray-600 space-y-1 font-mono">
+            <p>🖐 全向浏览 (Omni-Drive)</p>
+            <p>✊ 蓄力选中 (Hold to Select)</p>
+            <p>👋 挥手退出 (Wave to Close)</p>
+            <p>🤘 蓄力变形 (Rock to Shift)</p>
         </div>
       </div>
 

@@ -61,36 +61,54 @@ const isCurled = (landmarks, tipIdx, pipIdx) => {
 export const interpretGesture = (results) => {
   if (!results || !results.gestures.length) return { gesture: 'NONE' };
 
+  // --- Double Hand Check (Admin) ---
+  if (results.landmarks.length === 2) {
+      const hand1 = results.landmarks[0];
+      const hand2 = results.landmarks[1];
+      
+      const isHand1Fist = !isExtended(hand1, 8, 6) && !isExtended(hand1, 12, 10) && !isExtended(hand1, 16, 14) && !isExtended(hand1, 20, 18);
+      const isHand2Fist = !isExtended(hand2, 8, 6) && !isExtended(hand2, 12, 10) && !isExtended(hand2, 16, 14) && !isExtended(hand2, 20, 18);
+
+      if (isHand1Fist && isHand2Fist) {
+          // Both hands are fists -> DOUBLE_FIST
+          // Return center of first hand for potential UI usage, though typically unused for Admin trigger
+          return { 
+              gesture: 'DOUBLE_FIST',
+              handCenter: { x: hand1[9].x, y: hand1[9].y },
+              indexTip: { x: hand1[8].x, y: hand1[8].y },
+              handScale: getDistance(hand1[0], hand1[9])
+          };
+      }
+  }
+
+  // --- Single Hand Logic ---
   const landmarks = results.landmarks[0];
   const gestureData = results.gestures[0][0];
   const category = gestureData.categoryName;
   const score = gestureData.score;
 
-  if (score < 0.3) return { gesture: 'NONE' }; // Lower threshold slightly
+  if (score < 0.3) return { gesture: 'NONE' }; 
 
   // --- Finger States (Orientation Independent) ---
   const indexExt = isExtended(landmarks, 8, 6);
   const middleExt = isExtended(landmarks, 12, 10);
   const ringExt = isExtended(landmarks, 16, 14);
   const pinkyExt = isExtended(landmarks, 20, 18);
-  const thumbExt = isExtended(landmarks, 4, 2); // Check Thumb Tip vs MCP
+  const thumbExt = isExtended(landmarks, 4, 2); 
 
-  // Additional Thumb Check: Angle/Direction
-  // 4: Tip, 3: IP, 2: MCP, 1: CMC, 0: Wrist
-  // For Thumb Up/Down, we care about Y direction relative to IP
+  // Additional Thumb Check
   const thumbTipY = landmarks[4].y;
   const thumbIPY = landmarks[3].y;
-  const isThumbPointingUp = thumbTipY < thumbIPY; // Screen Y: Up is smaller
   const isThumbPointingDown = thumbTipY > thumbIPY;
 
   let gesture = 'NONE';
 
-  // 1. PINCH (Click) - REPLACES VICTORY
-  // Thumb & Index Tips Close (Pinch), others Curled (Crab Pincer style)
-  // This distinguishes it from OK (which has others Extended)
-  const pinchDist = getDistance(landmarks[4], landmarks[8]);
-  if (pinchDist < 0.05 && !middleExt && !ringExt && !pinkyExt) {
-      gesture = 'PINCH';
+  // 1. FIST (Select) - All fingers curled
+  // This replaces PINCH for selection
+  if (!indexExt && !middleExt && !ringExt && !pinkyExt) {
+      // Check thumb? Usually Fist implies thumb is also tucked or on side.
+      // We'll relax thumb requirement for Fist to avoid flakiness
+      gesture = 'FIST';
   }
 
   // 2. ROCK (Switch Layout)
@@ -99,46 +117,29 @@ export const interpretGesture = (results) => {
       gesture = 'ROCK';
   }
 
-  // 3. THUMB_DOWN (Exit)
-  // Thumb Extended & Pointing DOWN, Others Curled
+  // 3. THUMB_DOWN (Exit - Legacy/Alternative)
+  // Keep as fallback or secondary exit? Protocol says "Wave" is exit.
+  // But maybe keep Thumb Down as a explicit "Bad/Close" gesture just in case.
   else if (thumbExt && isThumbPointingDown && !indexExt && !middleExt && !ringExt && !pinkyExt) {
       gesture = 'THUMB_DOWN';
   }
 
-  // 4. OK (Admin)
-  // Thumb & Index Tips Close, Middle/Ring/Pinky Extended
-  else if (middleExt && ringExt && pinkyExt) {
-      const dist = getDistance(landmarks[4], landmarks[8]); 
-      if (dist < 0.05) {
-          gesture = 'OK';
-      }
-  }
-
-  // 5. POINT (Rotate) - Index Extended, others Curled
-  else if (indexExt && !middleExt && !ringExt && !pinkyExt) {
-      gesture = 'POINT';
-  }
-
-  // 6. OPEN_PALM (Zoom)
+  // 4. OPEN_PALM (Navigate / Omni-Joystick)
   // All fingers extended
   else if (indexExt && middleExt && ringExt && pinkyExt) {
        gesture = 'OPEN_PALM';
   }
   
-  // Fallback to MediaPipe category if geometry is ambiguous but category is strong
+  // Fallback to MediaPipe category
   if (gesture === 'NONE' && score > 0.6) {
       if (category === 'Open_Palm') gesture = 'OPEN_PALM';
-      if (category === 'Pointing_Up') gesture = 'POINT';
       if (category === 'Thumb_Down') gesture = 'THUMB_DOWN';
-      // Victory removed fallback
+      if (category === 'Closed_Fist') gesture = 'FIST';
   }
 
   // --- Coordinate Extraction ---
   const handCenter = { x: landmarks[9].x, y: landmarks[9].y };
   const indexTip = { x: landmarks[8].x, y: landmarks[8].y };
-  
-  // Calculate Hand Scale (Distance between Wrist(0) and Middle MCP(9))
-  // This is a stable metric for "Hand Distance"
   const handScale = getDistance(landmarks[0], landmarks[9]);
 
   return { 
