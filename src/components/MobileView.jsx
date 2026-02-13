@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import Mobile3DScene from './Mobile3DScene';
 import { config } from '../config';
+import { ImageWithLoader } from './Loading';
 
 export default function MobileView({ memories, onOpenUpload }) {
   const timerRef = useRef(null);
@@ -33,7 +34,7 @@ export default function MobileView({ memories, onOpenUpload }) {
         {config.title}
       </h1>
       <div className="flex flex-col gap-12 pb-16">
-        {memories.map((mem) => (
+        {memories.map((mem, index) => (
           <motion.div
             key={mem.id}
             initial={{ opacity: 0, y: 50, scale: 0.95 }}
@@ -44,11 +45,12 @@ export default function MobileView({ memories, onOpenUpload }) {
           >
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-white/20 shadow-[0_0_30px_rgba(6,182,212,0.15)] group">
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
-              <img 
-                src={mem.url || mem.image_url} 
-                alt={mem.description} 
+              <ImageWithLoader
+                src={mem.url || mem.image_url}
+                alt={mem.description}
                 className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-                loading="lazy"
+                containerClassName="w-full h-full"
+                priority={index < 2}
               />
             </div>
             <div className="flex flex-col gap-1 px-2">
