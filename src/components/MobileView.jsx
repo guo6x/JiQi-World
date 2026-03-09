@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import Mobile3DScene from './Mobile3DScene';
+import Footer from './Footer';
 import { config } from '../config';
 import { ImageWithLoader } from './Loading';
 
@@ -60,9 +61,8 @@ export default function MobileView({ memories, onOpenUpload }) {
           </motion.div>
         ))}
       </div>
-      <div className="text-center text-xs text-gray-600 pb-8">
-          Designed for Desktop Experience
-      </div>
+      
+      <Footer className="pb-24" />
 
       {/* 3D Mode Trigger */}
       <button 

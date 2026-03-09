@@ -5,6 +5,7 @@ import { soundManager } from './utils/SoundManager';
 import SplashScreen from './components/SplashScreen';
 import DesktopView from './components/DesktopView';
 import MobileView from './components/MobileView';
+import Footer from './components/Footer';
 import GestureHandler from './components/GestureHandler';
 import UploadModal from './components/UploadModal';
 import { config } from './config';
@@ -184,6 +185,9 @@ export default function App() {
               </div>
           );
       })()}
+
+      {/* Footer for Compliance */}
+      <Footer className="fixed bottom-0 left-0 w-full z-50 pointer-events-auto bg-gradient-to-t from-black via-black/80 to-transparent pb-2" />
 
       {error && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[70] bg-red-500/80 text-white px-6 py-2 rounded-full backdrop-blur-md shadow-lg flex items-center gap-2">
