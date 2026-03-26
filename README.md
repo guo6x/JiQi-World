@@ -5,7 +5,7 @@
 > 一个融合了 **React + Three.js + MediaPipe + Gyroscope** 的沉浸式 3D 纪念相册。不仅是视觉盛宴，更是一次打破次元壁的交互实验。
 
 ![Project Banner](./public/banner.png)
-*(建议替换为你的 PC 端地球旋转截图或 GIF)*
+
 
 ## ✨ 核心亮点 (Highlights)
 
